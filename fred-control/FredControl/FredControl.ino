@@ -25,6 +25,8 @@ int TOUCH_LEFT_VALUE = 0;
 int TOUCH_RIGHT_PIN = 9;
 int TOUCH_RIGHT_VALUE = 0;
 
+int VIB1_PIN = 13;
+
 // variaveis de estado do robô
 char veloc_srv = 40; // servo movement velocity
 char state_pose = NULL; // estado da posição inicial
@@ -86,7 +88,8 @@ void setup() {
   pinMode(TOUCH_HEAD_PIN, INPUT);
   pinMode(TOUCH_LEFT_PIN, INPUT);
   pinMode(TOUCH_RIGHT_PIN, INPUT);
-
+  pinMode(VIB1_PIN, OUTPUT);
+  
   fred.right_eye = fr;
   fred.left_eye = ed;
   fred.mouth = heart;
@@ -1155,20 +1158,29 @@ void processa_serial_port(){
   }
 }
 
+
 void sense_touch(){
-  if (digitalRead(TOUCH_HEAD_PIN) == 1)
+  if (digitalRead(TOUCH_HEAD_PIN) == 1){
+    digitalWrite(VIB1_PIN, HIGH);
     TOUCH_HEAD_VALUE = TOUCH_HEAD_VALUE + 1;
-      delay(200);
+    delay(200);
+  }
       
-  if (digitalRead(TOUCH_LEFT_PIN) == 1)
+  if (digitalRead(TOUCH_LEFT_PIN) == 1){
+    digitalWrite(VIB1_PIN, HIGH);
     TOUCH_LEFT_VALUE = TOUCH_LEFT_VALUE + 1;
-      delay(100);
+    delay(100);
+  }
 
-  if (digitalRead(TOUCH_RIGHT_PIN) == 1)
+  if (digitalRead(TOUCH_RIGHT_PIN) == 1){
+    digitalWrite(VIB1_PIN, HIGH);
     TOUCH_RIGHT_VALUE = TOUCH_RIGHT_VALUE + 1;
-      delay(100);
+    delay(100);
+  }
 
-  if (TOUCH_HEAD_VALUE >=5){
+  digitalWrite(VIB1_PIN, LOW);
+  
+  if (TOUCH_HEAD_VALUE >=10){
     expression_show(in_love); // Expression In love
     pose_down('i'); // Pose down (broken) slow
     rainbow(16, 'n'); // Arco Iris Effect 
