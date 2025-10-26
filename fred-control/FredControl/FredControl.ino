@@ -25,7 +25,6 @@ int TOUCH_LEFT_VALUE = 0;
 int TOUCH_RIGHT_PIN = 9;
 int TOUCH_RIGHT_VALUE = 0;
 
-int VIB1_PIN = 13;
 
 // variaveis de estado do robô
 char veloc_srv = 40; // servo movement velocity
@@ -69,13 +68,6 @@ Expression angry, angry2;
 Expression surprised, surprised2;
 Expression afraid;
 
-// Parameter 1 = number of pixels in strip
-// Parameter 2 = pin number (most are valid)
-// Parameter 3 = pixel type flags, add together as needed:
-//   NEO_KHZ800  800 KHz bitstream (most NeoPixel products w/WS2812 LEDs)
-//   NEO_KHZ400  400 KHz (classic 'v1' (not v2) FLORA pixels, WS2811 drivers)
-//   NEO_GRB     Pixels are wired for GRB bitstream (most NeoPixel products)
-//   NEO_RGB     Pixels are wired for RGB bitstream (v1 FLORA pixels, not v2)
 
 #define PIN 6
 Adafruit_NeoPixel ring = Adafruit_NeoPixel(16, PIN, NEO_GRB + NEO_KHZ800);
@@ -88,7 +80,6 @@ void setup() {
   pinMode(TOUCH_HEAD_PIN, INPUT);
   pinMode(TOUCH_LEFT_PIN, INPUT);
   pinMode(TOUCH_RIGHT_PIN, INPUT);
-  pinMode(VIB1_PIN, OUTPUT);
   
   fred.right_eye = fr;
   fred.left_eye = ed;
@@ -202,10 +193,8 @@ void colorWipe(uint32_t c, uint8_t wait, char type) {
       ring.setPixelColor(12 + i, c);
       ring.show();
       delay(wait);
-//      blinking_eyes();
     }
     delay(1);
-    //Serial.print(STATUS_FREE);
   }
   state_led = type;
   servos_attach();
@@ -1161,26 +1150,25 @@ void processa_serial_port(){
 
 void sense_touch(){
   if (digitalRead(TOUCH_HEAD_PIN) == 1){
-    digitalWrite(VIB1_PIN, HIGH);
+    for (int i=0; i<=TOUCH_HEAD_VALUE; i++){
+      ring.setPixelColor(15 - i, ring.Color(255, 0, 0, 255));
+    }
+    ring.show();
     TOUCH_HEAD_VALUE = TOUCH_HEAD_VALUE + 1;
     delay(200);
   }
       
   if (digitalRead(TOUCH_LEFT_PIN) == 1){
-    digitalWrite(VIB1_PIN, HIGH);
     TOUCH_LEFT_VALUE = TOUCH_LEFT_VALUE + 1;
     delay(100);
   }
 
   if (digitalRead(TOUCH_RIGHT_PIN) == 1){
-    digitalWrite(VIB1_PIN, HIGH);
     TOUCH_RIGHT_VALUE = TOUCH_RIGHT_VALUE + 1;
     delay(100);
   }
-
-  digitalWrite(VIB1_PIN, LOW);
   
-  if (TOUCH_HEAD_VALUE >=10){
+  if (TOUCH_HEAD_VALUE >15){
     expression_show(in_love); // Expression In love
     pose_down('i'); // Pose down (broken) slow
     rainbow(16, 'n'); // Arco Iris Effect 
@@ -1188,7 +1176,7 @@ void sense_touch(){
     expression_show(neutral); // Expression Neutral
     pose_init('1'); // Pose init (equilíbrio)
     colorWipe(ring.Color(0, 0, 0), delay_leds, 'k'); // Black (off) 
-    TOUCH_HEAD_VALUE = 0;
+    TOUCH_HEAD_VALUE = 0; // reset the head value
   }
 
   if (TOUCH_LEFT_VALUE >=2){
