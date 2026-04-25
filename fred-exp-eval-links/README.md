@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="fred.png" alt="FRED Robot" width="150"/>
+  <img src="fred.png" alt="FRED Robot" width="180"/>
 </p>
 
 <h1 align="center">🤖 FRED Robot: Affective Expressions Evaluation</h1>
