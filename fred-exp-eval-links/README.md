@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="fred.png" alt="FRED Robot" width="200"/>
+  <img src="fred.png" alt="FRED Robot" width="150"/>
 </p>
 
 <h1 align="center">🤖 FRED Robot: Affective Expressions Evaluation</h1>
@@ -8,7 +8,13 @@
   Video stimuli used in the experimental evaluation of the interaction between <b>FRED</b> and <b>Frida</b>.
 </p>
 
+<p align="center">
+  <i>Low-cost affective social robot for HRI research</i>
+</p>
+
 ---
+
+> **Note:** GitHub opens links in the same tab by default. Use **Ctrl + Click** or **Cmd + Click** to open videos in a new tab.
 
 ## 📺 Video Stimuli
 
@@ -37,3 +43,11 @@ Each video block was used as an independent stimulus during the experiment, allo
 ## 🔗 Citation
 
 If you use this material, please cite:
+
+```bibtex
+@phdthesis{your_reference_here,
+  author = {Your Name},
+  title = {Your Thesis Title},
+  school = {Your Institution},
+  year = {2026}
+}
