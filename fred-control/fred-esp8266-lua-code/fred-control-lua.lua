@@ -61,23 +61,82 @@ end)
     print(top_base .. "/leds")
     if data ~= nil then
       if data == "red" then
-        s:write("lr")
+        s:write("lr2")
+      elseif data == "red0" then
+        s:write("lr0")
+      elseif data == "red1" then
+        s:write("lr1")
+      elseif data == "red2" then
+        s:write("lr2")
       elseif data == "blue" then
-        s:write("lb")
+        s:write("lb2")
+      elseif data == "blue0" then
+        s:write("lb0")
+      elseif data == "blue1" then
+        s:write("lb1")
+      elseif data == "blue2" then
+        s:write("lb2")
       elseif data == "green" then
-        s:write("lg")
+        s:write("lg2")
+      elseif data == "green0" then
+        s:write("lg0")
+      elseif data == "green1" then
+        s:write("lg1")
+      elseif data == "green2" then
+        s:write("lg2")
       elseif data == "white" then
-        s:write("lw")
-      elseif data == "blue" then
-        s:write("lb")
+        s:write("lw2")
+      elseif data == "white0" then
+        s:write("lw0")
+      elseif data == "white1" then
+        s:write("lw1")
+      elseif data == "white2" then
+        s:write("lw2")
       elseif data == "black" then -- off
-        s:write("lk")
+        s:write("lk2")
       elseif data == "pink" then
-        s:write("lp")
+        s:write("lp2")
+      elseif data == "pink0" then
+        s:write("lp0")
+      elseif data == "pink1" then
+        s:write("lp1")
+      elseif data == "pink2" then
+        s:write("lp2")
       elseif data == "yellow" then
-        s:write("ly")
+        s:write("ly2")
+      elseif data == "yellow0" then
+        s:write("ly0")
+      elseif data == "yellow1" then
+        s:write("ly1")
+      elseif data == "yellow2" then
+        s:write("ly2")
       elseif data == "rainbow" then
-        s:write("ln")
+        s:write("ln2")
+      -- two colors
+      elseif data == "green_blue" then
+        s:write("lm3")
+      elseif data == "blue_green" then
+        s:write("lm3")
+      elseif data == "green_red" then
+        s:write("lm4")
+      elseif data == "red_green" then
+        s:write("lm4")
+      elseif data == "green_yellow" then
+        s:write("lm5")
+      elseif data == "yellow_green" then
+        s:write("lm5")
+      elseif data == "blue_red" then
+        s:write("lm6")
+      elseif data == "red_blue" then
+        s:write("lm6")
+      elseif data == "blue_yellow" then
+        s:write("lm7")
+      elseif data == "yellow_blue" then
+        s:write("lm7")
+      elseif data == "yellow_red" then
+        s:write("lm8")
+      elseif data == "red_yellow" then
+        s:write("lm8")
       end
     end
   end
@@ -152,7 +211,7 @@ end)
 
 -- for TLS: m:connect("192.168.11.118", secure-port, 1)
 mqtt_client:connect(host, 1883, false, function(client)
-  s:write("lg") -- Led verde indica que conectou ao broker
+  s:write("lg2") -- Led verde indica que conectou ao broker
   print("MQTT Broker connected...")
   
   -- subscribe topic with qos = 0

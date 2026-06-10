@@ -28,10 +28,11 @@ int TOUCH_RIGHT_VALUE = 0;
 
 // variaveis de estado do robô
 char veloc_srv = 40; // servo movement velocity
-char state_pose = NULL; // estado da posição inicial
-char state_expression = NULL; // estado da expressão (display) inicial
-char state_exp_aux = NULL; // variavel mantem seu estado mesmo depois da funcao terminar
-char state_led = NULL; // estado do anel de leds
+char state_pose = ' '; // estado da posição inicial
+char state_expression = ' '; // estado da expressão (display) inicial
+char state_exp_aux = ' '; // variavel mantem seu estado mesmo depois da funcao terminar
+char state_led = ' '; // estado do anel de leds
+char state_level_led = ' '; // nível de intensidade "emocional" para os leds (0 -> 4 leds, 1 ->12, 2 -> 16)
 
 unsigned long eye_blinking_mills = millis(); // eye blinking
 unsigned long eye_blinking_delay = 5000; // delay eye blinking
@@ -148,13 +149,15 @@ void setup() {
   ring.begin();
   ring.setBrightness(5); //adjust brightness here
   ring.show(); // Initialize all pixels to 'off'
-  
+
   expression_show(fred); 
   delay(3000);
-  colorWipe(ring.Color(255, 0, 0), delay_leds, 'r'); // Black (off)
-  state_led = 'r';
+  
+
+  state_led = 'g';
   expression_show(broken);
   state_expression = 'b';
+  delay(1000);
   servos_attach();
   pose_init('1');
 }
@@ -176,29 +179,407 @@ void run(){
 
 
 ///////////////////////////////////////////////////////////////// Funções para os LEDs RGB ////////////////////////////////////////
+// Essa função foi substituida para a que acende 4, 8 e 16 leds (para representar a intensidade emocional do robô)
+//// Fill the dots one after the other with a color
+//void colorWipe(uint32_t c, uint8_t wait, char type) {
+//  if (state_expression == 'T') {
+//    state_led = type;
+//    servos_attach();
+//  }
+//  else {
+//    servos_detach();
+//    delay(1); // evita o truncamento no envio pela porta serial
+//    //Serial.print(STATUS_LEDS);
+//    for(uint16_t i=0; i<ring.numPixels() / 4 + 1; i++) {
+//      ring.setPixelColor(4 - i, c);
+//      ring.setPixelColor(4 + i, c);
+//      ring.setPixelColor(12 - i, c);
+//      ring.setPixelColor(12 + i, c);
+//      ring.show();
+//      delay(wait);
+//    }
+//    delay(1);
+//  }
+//  state_led = type;
+//  servos_attach();
+//}
+
+
+
+// Função que acende 4, 8 ou 16 leds
 // Fill the dots one after the other with a color
-void colorWipe(uint32_t c, uint8_t wait, char type) {
+void colorWipe(uint32_t c, char level, char type) {
+  // A variável c não está funcionando mais. É preciso removê-la daqui e das chamadas da funcção
+  if (level == ' ') Serial.println("Nulo");
+  static uint32_t cor_anim;
+  state_led = type;
+  if (state_led == 'r') // red
+    cor_anim = ring.Color(255, 0, 0);
+  else if (state_led == 'b') // blue
+    cor_anim = ring.Color(0, 0, 255);
+  else if (state_led == 'g') // green
+    cor_anim = ring.Color(0, 255, 0);
+  else if (state_led == 'w') // white
+    cor_anim = ring.Color(255, 255, 255);
+  else if (state_led == 'k') // black
+    cor_anim = ring.Color(255, 255, 255); // se não tem cor no LED, fala com a cor branca
+  else if (state_led == 'n') // rainbow
+    cor_anim = ring.Color(0, 255, 0); 
+  else if (state_led == 'p') // pink
+    cor_anim = ring.Color(255, 0, 255);
+  else if (state_led == 'y') // yellow
+    cor_anim = ring.Color(180,140,0);
+
+    
   if (state_expression == 'T') {
     state_led = type;
+    state_level_led = level;
     servos_attach();
   }
   else {
     servos_detach();
-    delay(1); // evita o truncamento no envio pela porta serial
-    //Serial.print(STATUS_LEDS);
-    for(uint16_t i=0; i<ring.numPixels() / 4 + 1; i++) {
-      ring.setPixelColor(4 - i, c);
-      ring.setPixelColor(4 + i, c);
-      ring.setPixelColor(12 - i, c);
-      ring.setPixelColor(12 + i, c);
-      ring.show();
-      delay(wait);
+    delay(150); // evita o conflito com a lib rgb
+    int anim_delay = 20;
+
+     
+    if (state_led != 'm'){
+      //Apaga os leds
+      for(uint16_t i=0; i<8; i++) { // Apaga os leds
+          ring.setPixelColor(i, ring.Color(0,0,0));
+          ring.setPixelColor(15 - i, ring.Color(0,0,0));
+       }
+       ring.show();
+      if (level == '0'){ // 0 acende 6 leds
+        ring.setPixelColor(0, ring.Color(0,0,0)); 
+        delay(anim_delay); ring.show();
+        ring.setPixelColor(8, ring.Color(0,0,0));
+        delay(anim_delay); ring.show();
+        ring.setPixelColor(1, ring.Color(0,0,0));
+        delay(anim_delay); ring.show();
+        ring.setPixelColor(9, ring.Color(0,0,0));
+        delay(anim_delay); ring.show();
+        ring.setPixelColor(2, ring.Color(0,0,0));
+        delay(anim_delay); ring.show();
+        ring.setPixelColor(10, cor_anim);
+        delay(anim_delay); ring.show();
+        ring.setPixelColor(3, cor_anim);
+        delay(anim_delay); ring.show();
+        ring.setPixelColor(11, cor_anim);
+        delay(anim_delay); ring.show();
+        ring.setPixelColor(4, cor_anim);
+        delay(anim_delay); ring.show();
+        ring.setPixelColor(12, cor_anim);
+        delay(anim_delay); ring.show();
+        ring.setPixelColor(5, cor_anim);
+        delay(anim_delay); ring.show();
+        ring.setPixelColor(13, ring.Color(0,0,0));
+        delay(anim_delay); ring.show();
+        ring.setPixelColor(6, ring.Color(0,0,0));
+        delay(anim_delay); ring.show();
+        ring.setPixelColor(14, ring.Color(0,0,0));
+        delay(anim_delay); ring.show();
+        ring.setPixelColor(7, ring.Color(0,0,0));
+        delay(anim_delay); ring.show();
+        ring.setPixelColor(15, ring.Color(0,0,0));
+        delay(anim_delay); ring.show();
+        delay(1);
+      } else
+      if (level == '1'){ // 1 acende 14 leds
+        ring.setPixelColor(0, ring.Color(0,0,0)); // 0
+        delay(anim_delay); ring.show();
+        ring.setPixelColor(8, ring.Color(0,0,0)); // 8
+        delay(anim_delay); ring.show();           
+        ring.setPixelColor(1, cor_anim);          // 1
+        delay(anim_delay); ring.show();
+        ring.setPixelColor(9, cor_anim);          // 9
+        delay(anim_delay); ring.show();        
+        ring.setPixelColor(2, cor_anim);          // 2
+        delay(anim_delay); ring.show();
+        ring.setPixelColor(10, cor_anim);         // 10
+        delay(anim_delay); ring.show();
+        ring.setPixelColor(3, cor_anim);          // 3
+        delay(anim_delay); ring.show();
+        ring.setPixelColor(11, cor_anim);         // 11
+        delay(anim_delay); ring.show();
+        ring.setPixelColor(4, cor_anim);          // 4
+        delay(anim_delay); ring.show();
+        ring.setPixelColor(12, cor_anim);         // 12
+        delay(anim_delay); ring.show();
+        ring.setPixelColor(5, cor_anim);          // 5
+        delay(anim_delay); ring.show();
+        ring.setPixelColor(13, cor_anim);         // 13
+        delay(anim_delay); ring.show();
+        ring.setPixelColor(6, cor_anim);          // 6
+        delay(anim_delay); ring.show();
+        ring.setPixelColor(14, cor_anim);         // 14
+        delay(anim_delay); ring.show();
+        ring.setPixelColor(7, ring.Color(0,0,0)); // 7
+        delay(anim_delay); ring.show();;
+        ring.setPixelColor(15, ring.Color(0,0,0));// 15
+        delay(anim_delay); ring.show();
+        delay(1);
+      } else
+      if (level == '2'){ // 2 acende 16 leds
+        ring.setPixelColor(0, cor_anim);
+        delay(anim_delay); ring.show();
+        ring.setPixelColor(8, cor_anim);
+        delay(anim_delay); ring.show();
+        ring.setPixelColor(1, cor_anim);
+        delay(anim_delay); ring.show();
+        ring.setPixelColor(9, cor_anim);
+        delay(anim_delay); ring.show();
+        ring.setPixelColor(2, cor_anim);
+        delay(anim_delay); ring.show();
+        ring.setPixelColor(10, cor_anim);
+        delay(anim_delay); ring.show();
+        ring.setPixelColor(3, cor_anim);
+        delay(anim_delay); ring.show();
+        ring.setPixelColor(11, cor_anim);
+        delay(anim_delay); ring.show();
+        ring.setPixelColor(4, cor_anim);
+        delay(anim_delay); ring.show();
+        ring.setPixelColor(12, cor_anim);
+        delay(anim_delay); ring.show();
+        ring.setPixelColor(5, cor_anim);
+        delay(anim_delay); ring.show();
+        ring.setPixelColor(13, cor_anim);
+        delay(anim_delay); ring.show();
+        ring.setPixelColor(6, cor_anim);
+        delay(anim_delay); ring.show();
+        ring.setPixelColor(14, cor_anim);
+        delay(anim_delay); ring.show();
+        ring.setPixelColor(7, cor_anim);
+        delay(anim_delay); ring.show();
+        ring.setPixelColor(15, cor_anim);
+        delay(anim_delay); ring.show();
+        ring.show();
+        delay(1);
+      }
+    } else
+    if (level == '3'){ // verde e azul
+      ring.setPixelColor(0, ring.Color(0,255,0));
+      delay(anim_delay); ring.show();
+      ring.setPixelColor(8, ring.Color(0,0,255));
+      delay(anim_delay); ring.show();
+      ring.setPixelColor(1, ring.Color(0,255,0));
+      delay(anim_delay); ring.show();
+      ring.setPixelColor(9, ring.Color(0,0,255));
+      delay(anim_delay); ring.show();
+      ring.setPixelColor(2, ring.Color(0,255,0));
+      delay(anim_delay); ring.show();
+      ring.setPixelColor(10, ring.Color(0,0,255));
+      delay(anim_delay); ring.show();
+      ring.setPixelColor(3, ring.Color(0,255,0));
+      delay(anim_delay); ring.show();
+      ring.setPixelColor(11, ring.Color(0,0,255));
+      delay(anim_delay); ring.show();
+      ring.setPixelColor(4, ring.Color(0,255,0));
+      delay(anim_delay); ring.show();
+      ring.setPixelColor(12, ring.Color(0,0,255));
+      delay(anim_delay); ring.show();
+      ring.setPixelColor(5, ring.Color(0,255,0));
+      delay(anim_delay); ring.show();
+      ring.setPixelColor(13, ring.Color(0,0,255));
+      delay(anim_delay); ring.show();
+      ring.setPixelColor(6, ring.Color(0,255,0));
+      delay(anim_delay); ring.show();
+      ring.setPixelColor(14, ring.Color(0,0,255));
+      delay(anim_delay); ring.show();
+      ring.setPixelColor(7, ring.Color(0,255,0));
+      delay(anim_delay); ring.show();
+      ring.setPixelColor(15, ring.Color(0,0,255));
+      delay(anim_delay); ring.show();
+      delay(1);
+    } else
+    if (level == '4'){ // verde e vermelho
+      ring.setPixelColor(0, ring.Color(0,255,0));
+      delay(anim_delay); ring.show();
+      ring.setPixelColor(8, ring.Color(255,0,0));
+      delay(anim_delay); ring.show();
+      ring.setPixelColor(1, ring.Color(0,255,0));
+      delay(anim_delay); ring.show();
+      ring.setPixelColor(9, ring.Color(255,0,0));
+      delay(anim_delay); ring.show();
+      ring.setPixelColor(2, ring.Color(0,255,0));
+      delay(anim_delay); ring.show();
+      ring.setPixelColor(10, ring.Color(255,0,0));
+      delay(anim_delay); ring.show();
+      ring.setPixelColor(3, ring.Color(0,255,0));
+      delay(anim_delay); ring.show();
+      ring.setPixelColor(11, ring.Color(255,0,0));
+      delay(anim_delay); ring.show();
+      ring.setPixelColor(4, ring.Color(0,255,0));
+      delay(anim_delay); ring.show();
+      ring.setPixelColor(12, ring.Color(255,0,0));
+      delay(anim_delay); ring.show();
+      ring.setPixelColor(5, ring.Color(0,255,0));
+      delay(anim_delay); ring.show();
+      ring.setPixelColor(13, ring.Color(255,0,0));
+      delay(anim_delay); ring.show();
+      ring.setPixelColor(6, ring.Color(0,255,0));
+      delay(anim_delay); ring.show();
+      ring.setPixelColor(14, ring.Color(255,0,0));
+      delay(anim_delay); ring.show();
+      ring.setPixelColor(7, ring.Color(0,255,0));
+      delay(anim_delay); ring.show();
+      ring.setPixelColor(15, ring.Color(255,0,0));
+      delay(anim_delay); ring.show();
+      delay(1);
+    } else
+    if (level == '5'){ // verde e amarelo
+      ring.setPixelColor(0, ring.Color(0,255,0));
+      delay(anim_delay); ring.show();
+      ring.setPixelColor(8, ring.Color(180,140,0));
+      delay(anim_delay); ring.show();
+      ring.setPixelColor(1, ring.Color(0,255,0));
+      delay(anim_delay); ring.show();
+      ring.setPixelColor(9, ring.Color(180,140,0));
+      delay(anim_delay); ring.show();
+      ring.setPixelColor(2, ring.Color(0,255,0));
+      delay(anim_delay); ring.show();
+      ring.setPixelColor(10, ring.Color(180,140,0));
+      delay(anim_delay); ring.show();
+      ring.setPixelColor(3, ring.Color(0,255,0));
+      delay(anim_delay); ring.show();
+      ring.setPixelColor(11, ring.Color(180,140,0));
+      delay(anim_delay); ring.show();
+      ring.setPixelColor(4, ring.Color(0,255,0));
+      delay(anim_delay); ring.show();
+      ring.setPixelColor(12, ring.Color(180,140,0));
+      delay(anim_delay); ring.show();
+      ring.setPixelColor(5, ring.Color(0,255,0));
+      delay(anim_delay); ring.show();
+      ring.setPixelColor(13, ring.Color(180,140,0));
+      delay(anim_delay); ring.show();
+      ring.setPixelColor(6, ring.Color(0,255,0));
+      delay(anim_delay); ring.show();
+      ring.setPixelColor(14, ring.Color(180,140,0));
+      delay(anim_delay); ring.show();
+      ring.setPixelColor(7, ring.Color(0,255,0));
+      delay(anim_delay); ring.show();
+      ring.setPixelColor(15, ring.Color(180,140,0));
+      delay(anim_delay); ring.show();
+
+      delay(1);
+    } else
+    if (level == '6'){ // azul e vermelho
+      ring.setPixelColor(0, ring.Color(0,0,255));
+      delay(anim_delay); ring.show();
+      ring.setPixelColor(8, ring.Color(255,0,0));
+      delay(anim_delay); ring.show();
+      ring.setPixelColor(1, ring.Color(0,0,255));
+      delay(anim_delay); ring.show();
+      ring.setPixelColor(9, ring.Color(255,0,0));
+      delay(anim_delay); ring.show();
+      ring.setPixelColor(2, ring.Color(0,0,255));
+      delay(anim_delay); ring.show();
+      ring.setPixelColor(10, ring.Color(255,0,0));
+      delay(anim_delay); ring.show();
+      ring.setPixelColor(3, ring.Color(0,0,255));
+      delay(anim_delay); ring.show();
+      ring.setPixelColor(11, ring.Color(255,0,0));
+      delay(anim_delay); ring.show();
+      ring.setPixelColor(4, ring.Color(0,0,255));
+      delay(anim_delay); ring.show();
+      ring.setPixelColor(12, ring.Color(255,0,0));
+      delay(anim_delay); ring.show();
+      ring.setPixelColor(5, ring.Color(0,0,255));
+      delay(anim_delay); ring.show();
+      ring.setPixelColor(13, ring.Color(255,0,0));
+      delay(anim_delay); ring.show();
+      ring.setPixelColor(6, ring.Color(0,0,255));
+      delay(anim_delay); ring.show();
+      ring.setPixelColor(14, ring.Color(255,0,0));
+      delay(anim_delay); ring.show();
+      ring.setPixelColor(7, ring.Color(0,0,255));
+      delay(anim_delay); ring.show();
+      ring.setPixelColor(15, ring.Color(255,0,0));
+      delay(anim_delay); ring.show();
+      delay(1);
+      
+    } else
+    if (level == '7'){ // azul e amarelo
+      ring.setPixelColor(0, ring.Color(0, 0, 255));
+      delay(anim_delay); ring.show();
+      ring.setPixelColor(8, ring.Color(180,140,0));
+      delay(anim_delay); ring.show();
+      ring.setPixelColor(1, ring.Color(0, 0, 255));
+      delay(anim_delay); ring.show();
+      ring.setPixelColor(9, ring.Color(180,140,0));
+      delay(anim_delay); ring.show();
+      ring.setPixelColor(2, ring.Color(0, 0, 255));
+      delay(anim_delay); ring.show();
+      ring.setPixelColor(10, ring.Color(180,140,0));
+      delay(anim_delay); ring.show();
+      ring.setPixelColor(3, ring.Color(0, 0, 255));
+      delay(anim_delay); ring.show();
+      ring.setPixelColor(11, ring.Color(180,140,0));
+      delay(anim_delay); ring.show();
+      ring.setPixelColor(4, ring.Color(0, 0, 255));
+      delay(anim_delay); ring.show();
+      ring.setPixelColor(12, ring.Color(180,140,0));
+      delay(anim_delay); ring.show();
+      ring.setPixelColor(5, ring.Color(0, 0, 255));
+      delay(anim_delay); ring.show();
+      ring.setPixelColor(13, ring.Color(180,140,0));
+      delay(anim_delay); ring.show();
+      ring.setPixelColor(6, ring.Color(0, 0, 255));
+      delay(anim_delay); ring.show();
+      ring.setPixelColor(14, ring.Color(180,140,0));
+      delay(anim_delay); ring.show();
+      ring.setPixelColor(7, ring.Color(0, 0, 255));
+      delay(anim_delay); ring.show();
+      ring.setPixelColor(15, ring.Color(180,140,0));
+      delay(anim_delay); ring.show();
+
+      delay(1);
+    } else
+    if (level == '8'){ // amarelo e vermelho
+      ring.setPixelColor(0, ring.Color(180,140,0));
+      delay(anim_delay); ring.show();
+      ring.setPixelColor(8, ring.Color(255,0,0));
+      delay(anim_delay); ring.show();
+      ring.setPixelColor(1, ring.Color(180,140,0));
+      delay(anim_delay); ring.show();
+      ring.setPixelColor(9, ring.Color(255,0,0));
+      delay(anim_delay); ring.show();
+      ring.setPixelColor(2, ring.Color(180,140,0));
+      delay(anim_delay); ring.show();
+      ring.setPixelColor(10, ring.Color(255,0,0));
+      delay(anim_delay); ring.show();
+      ring.setPixelColor(3, ring.Color(180,140,0));
+      delay(anim_delay); ring.show();
+      ring.setPixelColor(11, ring.Color(255,0,0));
+      delay(anim_delay); ring.show();
+      ring.setPixelColor(4, ring.Color(180,140,0));
+      delay(anim_delay); ring.show();
+      ring.setPixelColor(12, ring.Color(255,0,0));
+      delay(anim_delay); ring.show();
+      ring.setPixelColor(5, ring.Color(180,140,0));
+      delay(anim_delay); ring.show();
+      ring.setPixelColor(13, ring.Color(255,0,0));
+      delay(anim_delay); ring.show();
+      ring.setPixelColor(6, ring.Color(180,140,0));
+      delay(anim_delay); ring.show();
+      ring.setPixelColor(14, ring.Color(255,0,0));
+      delay(anim_delay); ring.show();
+      ring.setPixelColor(7, ring.Color(180,140,0));
+      delay(anim_delay); ring.show();
+      ring.setPixelColor(15, ring.Color(255,0,0));
+      delay(anim_delay); ring.show();
+      delay(1);
     }
-    delay(1);
   }
   state_led = type;
+  state_level_led = level;
   servos_attach();
 }
+
+
+
+
+
+
 
 // efeito no LED usado na fala do robô
 void colorSpeech(uint32_t c, bool type) {
@@ -243,11 +624,30 @@ void rainbow(uint8_t wait, char type) {
     ring.show();
     delay(wait);
   }
-  state_led = type;
+
   delay(1);
   //Serial.print(STATUS_FREE);
+  static uint32_t cor_anim;
+  if (state_led == 'r') // red
+    cor_anim = ring.Color(255, 0, 0);
+  else if (state_led == 'b') // blue
+    cor_anim = ring.Color(0, 0, 255);
+  else if (state_led == 'g') // green
+    cor_anim = ring.Color(0, 255, 0);
+  else if (state_led == 'w') // white
+    cor_anim = ring.Color(255, 255, 255);
+  else if (state_led == 'k') // black
+    cor_anim = ring.Color(255, 255, 255); // se não tem cor no LED, fala com a cor branca
+  else if (state_led == 'n') // rainbow
+    cor_anim = ring.Color(0, 255, 0); 
+  else if (state_led == 'p') // pink
+    cor_anim = ring.Color(255,0,255);
+  else if (state_led == 'y') // yellow
+    cor_anim = ring.Color(180,140,0);
+  colorWipe(cor_anim, state_level_led, state_led); // restaura a cor dos LEDs
   servos_attach();
 }
+
  
 // Slightly different, this makes the rainbow equally distributed throughout
 void rainbowCycle(uint8_t wait) {
@@ -280,6 +680,8 @@ uint32_t Wheel(byte WheelPos) {
    return ring.Color(0, WheelPos * 3, 255 - WheelPos * 3);
   }
 }
+
+
 
 ///////////////////////////////////////////////////////////////// Função que mostra uma Expressão no DISPLAY ///////////////////////////////
 // show an expression
@@ -817,8 +1219,10 @@ void speech_anim(char command){
           cor_anim = ring.Color(0, 255, 0); 
         else if (state_led == 'p') // pink
           cor_anim = ring.Color(255, 0, 255);
-        else if (state_led == 'y') // pink
-          cor_anim = ring.Color(255, 191, 0);
+        else if (state_led == 'y') // yellow
+          cor_anim = ring.Color(180,140,0);
+        else cor_anim = ring.Color(60, 60, 60); // Cor usada para os leds em emotions mistas, de passagem
+         
         colorSpeech(cor_anim, led_type);
         led_type = !led_type;
         led_speech_mills = millis(); // reinicia o contador
@@ -886,7 +1290,7 @@ void speech_anim(char command){
       else if (state_expression == 'A') expression_show(angry2);
       else if (state_expression == 'u') expression_show(surprised2); // ficou definido que após a fala, a exp. de surprised fica com boca "neutral" usando a struct "surprised2"
       else if (state_expression == 'r') expression_show(afraid);
-      colorWipe(cor_anim, delay_leds, state_led); // restaura a cor dos LEDs
+      colorWipe(cor_anim, state_level_led, state_led); // restaura a cor dos LEDs
       servos_attach(); 
     }
     else if (state_expression == 'C') {
@@ -933,6 +1337,7 @@ void blinking_eyes(){
   }
 }
 
+
 // controla pequenos movimentos do pé do FRED para dar vida a ele
 void anim_feet(){
   int veloc_srv_aux = veloc_srv; // saves veloc value
@@ -967,7 +1372,7 @@ void anim_feet(){
 //////////////////////////////////////////////////////////// Funções que processam os comandos recebidos na porta SERIAL ///////////////////
 void processa_serial_port(){
   // os comandos são em pares (um char para o comando e outro char para o parâmentro)
-  if (Serial.available() >= 2){
+  if (Serial.available() >=2){
     int func = Serial.read(); // lê o comando (primeiro)
     ///////////////////////////////////// comandos para controlar cada servo individualmente ///////////////////////////
     if (func == 'a'){ // foot left
@@ -1005,16 +1410,21 @@ void processa_serial_port(){
 
     /////////////////////////////////// comandos para controlar os LEDs RGB do tórax do robô ///////////////////////////
     if (func == 'l'){ // led
-      int efx =Serial.read(); // lê o parâmentro (efx)
+      int efx = Serial.read(); // lê o parâmentro (efx)
+      delay(10);
+      char level = Serial.read(); // lê o parâmentro (level) que controla o numero de leds a acender (1 -> 4, 2 -> 12, 3 -> 16) delay_leds
+      delay(10);
       if ((state_expression == 'T') || (state_expression == 'C')) delay_leds = 0; // When speeching, leds should change fast!
-      if (efx == 'r') colorWipe(ring.Color(255, 0, 0), delay_leds, efx); // Angry Red   
-      if (efx == 'b') colorWipe(ring.Color(0, 0, 255), delay_leds, efx); // Sad Blue 
-      if (efx == 'g') colorWipe(ring.Color(0, 255, 0), delay_leds, efx); // Green Happy
-      if (efx == 'w') colorWipe(ring.Color(255, 255, 255), delay_leds, efx); // White  
-      if (efx == 'k') colorWipe(ring.Color(0, 0, 0), delay_leds, efx); // Black (off) 
-      if (efx == 'p') colorWipe(ring.Color(255, 0, 255), delay_leds, efx); // Pink
-      if (efx == 'y') colorWipe(ring.Color(255, 191, 0), delay_leds, efx); // Yellow
+      if (efx == 'r') colorWipe(ring.Color(255, 0, 0), level, efx); // Angry Red   
+      if (efx == 'b') colorWipe(ring.Color(0, 0, 255), level, efx); // Sad Blue 
+      if (efx == 'g') colorWipe(ring.Color(0, 255, 0), level, efx); // Green Happy
+      if (efx == 'w') colorWipe(ring.Color(255, 255, 255), level, efx); // White  
+      if (efx == 'k') colorWipe(ring.Color(0, 0, 0), level, efx); // Black (off) 
+      if (efx == 'p') colorWipe(ring.Color(255, 0, 255), level, efx); // Pink
+      if (efx == 'y') colorWipe(ring.Color(180,140,0), level, efx); // Yellow
 
+      if (efx == 'm') colorWipe(ring.Color(255, 191, 0), level, efx); // (m)ix de duas emoções
+      
       if (efx == 'n') rainbow(16, efx); // Arco Iris Effect 
     } else
 
@@ -1151,7 +1561,7 @@ void processa_serial_port(){
 void sense_touch(){
   if (digitalRead(TOUCH_HEAD_PIN) == 1){
     for (int i=0; i<=TOUCH_HEAD_VALUE; i++){
-      ring.setPixelColor(15 - i, ring.Color(255, 0, 0, 255));
+      ring.setPixelColor(15 - i, ring.Color(255, 255, 255, 255));
     }
     ring.show();
     TOUCH_HEAD_VALUE = TOUCH_HEAD_VALUE + 1;
@@ -1175,29 +1585,29 @@ void sense_touch(){
     delay(2000);
     expression_show(neutral); // Expression Neutral
     pose_init('1'); // Pose init (equilíbrio)
-    colorWipe(ring.Color(0, 0, 0), delay_leds, 'k'); // Black (off) 
     TOUCH_HEAD_VALUE = 0; // reset the head value
   }
 
   if (TOUCH_LEFT_VALUE >=2){
     expression_show(happy); // Expression Happy
     pose_up('L'); // Pose up (left foot2)
-    colorWipe(ring.Color(0, 255, 0), delay_leds, 'g'); // Green Happy
+    colorWipe(ring.Color(0, 255, 0), '2', 'g'); // Green Happy
     delay(3000);
     expression_show(neutral); // Expression Neutral
     pose_init('1'); // Pose init (equilíbrio)
-    colorWipe(ring.Color(0, 0, 0), delay_leds, 'k'); // Black (off) 
+    
+    colorWipe(ring.Color(0, 0, 0), state_level_led, state_led); // return to emotional state
     TOUCH_LEFT_VALUE = 0;
   }
 
   if (TOUCH_RIGHT_VALUE >=2){
     expression_show(happy); // Expression Happy
     pose_up('R'); // Pose up (right foot2)
-    colorWipe(ring.Color(0, 255, 0), delay_leds, 'g'); // Green Happy
+    colorWipe(ring.Color(0, 255, 0), '2', 'g'); // Green Happy
     delay(3000);
     expression_show(neutral); // Expression Neutral
     pose_init('1'); // Pose init (equilíbrio)
-    colorWipe(ring.Color(0, 0, 0), delay_leds, 'k'); // Black (off) 
+    colorWipe(ring.Color(0, 0, 0), state_level_led, state_led); // return to emotional state 
     TOUCH_RIGHT_VALUE = 0;
   }
 }
